@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  postgres-instance:
+    image: postgres:latest
+    restart: "on-failure"
+    environment:
+      POSTGRES_USER: default
+      POSTGRES_DB: brief
+      POSTGRES_PASSWORD: password
+    container_name: postgres-brief
+    # Uncomment the lines below after creating 'postgres/datadir' in root directory
+    #    volumes:
+    #      - /postgres/datadir:.
+    networks:
+      - "my_network"
+
+  brief: 
+    build: 
+      dockerfile: Dockerfile.dev
+    restart: "unless-stopped"
+    depends_on:
+      - postgres-instance
+    ports:
+      - '8080:8080'
+    container_name: brief
+    environment:
+      - SERVER_PORT=8080
+      - SECRET_KEY=change-this-in-production
+      # - REDIS_HOST=
+      # - REDIS_PORT=
+      - PG_HOST=postgres-instance
+      - PG_PORT=5432
+      - PG_DATABASE=brief
+      - PG_USER=default
+      - PG_PASSWORD=password
+      - ADMIN_ID=admin
+      - ADMIN_PASSWORD=password
+    volumes:
+      - .:/app
+    networks:
+      - "my_network"
+
+networks:
+  my_network:
